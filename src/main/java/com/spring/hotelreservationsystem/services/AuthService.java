@@ -2,6 +2,9 @@ package com.spring.hotelreservationsystem.services;
 
 import com.spring.hotelreservationsystem.models.User;
 import com.spring.hotelreservationsystem.repositories.UserRepository;
+import com.spring.hotelreservationsystem.security.JwtUtil;
+import com.spring.hotelreservationsystem.security.UserDetailService;
+import com.spring.hotelreservationsystem.dto.LoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final UserDetailService userDetailService;
 
     public User register(User user) {
 
@@ -23,15 +28,19 @@ public class AuthService {
 //        return "Login successful";
 //    }
 
-    public String login(String email, String password) {
+    public LoginResponse login(String email, String password) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if(passwordEncoder.matches(password, user.getPassword())){
-            return "Login successful";
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
         }
 
-        throw new RuntimeException("Invalid password");
+        var userDetails = userDetailService.loadUserByUsername(email);
+
+        String token = jwtUtil.generateToken(userDetails);
+
+        return new LoginResponse(token);
     }
 }
