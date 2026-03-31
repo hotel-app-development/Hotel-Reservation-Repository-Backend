@@ -12,7 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-class RoomAvailabilityServiceTest {
+class RoomAvailabilityTest {
 
     private RoomRepository roomRepository;
     private BookingRepository bookingRepository;
