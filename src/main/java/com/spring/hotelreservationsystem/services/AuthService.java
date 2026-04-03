@@ -29,7 +29,6 @@ public class AuthService {
 //    }
 
     public LoginResponseDTO login(String email, String password) {
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -38,9 +37,8 @@ public class AuthService {
         }
 
         var userDetails = userDetailService.loadUserByUsername(email);
-
         String token = jwtUtil.generateToken(userDetails);
 
-        return new LoginResponseDTO(token);
+        return new LoginResponseDTO(token, user.getRole().name()); // <-- include role
     }
 }
