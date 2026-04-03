@@ -25,8 +25,10 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth //temporary fix, all endpoints are public
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/availability/**").permitAll()
+                        .requestMatchers("/api/rooms/**").permitAll()
                         .requestMatchers("/api/bookings/**").authenticated()
                         .requestMatchers("/api/manager/**").hasRole("MANAGER")
                         .anyRequest().authenticated()

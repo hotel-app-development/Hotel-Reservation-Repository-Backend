@@ -3,38 +3,38 @@ package com.spring.hotelreservationsystem.controllers;
 import com.spring.hotelreservationsystem.dto.RoomDTO;
 import com.spring.hotelreservationsystem.mapper.RoomMapper;
 import com.spring.hotelreservationsystem.models.Room;
-import com.spring.hotelreservationsystem.repositories.RoomRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.spring.hotelreservationsystem.services.RoomAvailabilityService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/availability")
 public class AvailabilityController {
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomAvailabilityService roomAvailabilityService;
+
+    public AvailabilityController(RoomAvailabilityService roomAvailabilityService) {
+        this.roomAvailabilityService = roomAvailabilityService;
+    }
 
     @GetMapping
-    public ResponseEntity<?> getAvailableRooms(
+    public ResponseEntity<List<RoomDTO>> getAvailableRooms(
             @RequestParam("start") LocalDate start,
             @RequestParam("end") LocalDate end
     ) {
-
         if (end.isBefore(start)) {
-            return ResponseEntity.badRequest().body("Invalid date range");
+            return ResponseEntity.badRequest().build();
         }
 
-        List<RoomDTO> availableRooms = roomRepository.findAll()
-                .stream()
-                .filter(room -> "AVAILABLE".equalsIgnoreCase(room.getStatus()))
+        List<Room> availableRooms = roomAvailabilityService.getAvailableRooms(start, end);
+
+        List<RoomDTO> dtos = availableRooms.stream()
                 .map(RoomMapper::toDTO)
                 .toList();
 
-        return ResponseEntity.ok(availableRooms);
+        return ResponseEntity.ok(dtos);
     }
 }
