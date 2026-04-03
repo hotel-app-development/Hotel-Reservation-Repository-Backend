@@ -4,6 +4,7 @@ import com.spring.hotelreservationsystem.dto.LoginRequestDTO;
 import com.spring.hotelreservationsystem.dto.LoginResponseDTO;
 import com.spring.hotelreservationsystem.dto.UserDTO;
 import com.spring.hotelreservationsystem.dto.UserRegistrationDTO;
+import com.spring.hotelreservationsystem.mapper.UserMapper;
 import com.spring.hotelreservationsystem.models.User;
 import com.spring.hotelreservationsystem.services.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +20,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(
-            @RequestBody UserRegistrationDTO request
-    ) {
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+    public ResponseEntity<UserDTO> registerUser(@RequestBody UserRegistrationDTO dto) {
 
-        User savedUser = authService.register(user);
+        User user = UserMapper.toEntity(dto);
+        User saved = authService.register(user);
 
-        UserDTO dto = new UserDTO();
-        dto.setId(savedUser.getId());
-        dto.setName(savedUser.getName());
-        dto.setEmail(savedUser.getEmail());
-        dto.setRole(savedUser.getRole().name());
-
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(UserMapper.toDTO(saved));
     }
 
     @PostMapping("/login")

@@ -1,5 +1,7 @@
 package com.spring.hotelreservationsystem.controllers;
 
+import com.spring.hotelreservationsystem.dto.RoomDTO;
+import com.spring.hotelreservationsystem.mapper.RoomMapper;
 import com.spring.hotelreservationsystem.models.Room;
 import com.spring.hotelreservationsystem.repositories.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +25,15 @@ public class AvailabilityController {
             @RequestParam("end") LocalDate end
     ) {
 
-        // Validate date range
         if (end.isBefore(start)) {
             return ResponseEntity.badRequest().body("Invalid date range");
         }
 
-        // Fetch rooms
-        List<Room> availableRooms = roomRepository.findAll()
+        List<RoomDTO> availableRooms = roomRepository.findAll()
                 .stream()
                 .filter(room -> "AVAILABLE".equalsIgnoreCase(room.getStatus()))
-                .collect(Collectors.toList());
+                .map(RoomMapper::toDTO)
+                .toList();
 
         return ResponseEntity.ok(availableRooms);
     }

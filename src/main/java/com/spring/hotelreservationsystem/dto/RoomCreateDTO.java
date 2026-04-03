@@ -7,4 +7,5 @@ public class RoomCreateDTO {
     private String roomType;
     private int beds;
     private double price;
+    private String status;
 }

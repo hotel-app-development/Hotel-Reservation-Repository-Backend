@@ -1,5 +1,8 @@
 package com.spring.hotelreservationsystem.controllers;
 
+import com.spring.hotelreservationsystem.dto.RoomCreateDTO;
+import com.spring.hotelreservationsystem.dto.RoomDTO;
+import com.spring.hotelreservationsystem.mapper.RoomMapper;
 import com.spring.hotelreservationsystem.models.Room;
 import com.spring.hotelreservationsystem.services.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,15 +25,20 @@ public class RoomController {
 
     //GET /rooms
     @GetMapping
-    public List<Room> getAllRooms() {
-        return roomService.getAllRooms();
+    public List<RoomDTO> getAllRooms() {
+        return roomService.getAllRooms()
+                .stream()
+                .map(RoomMapper::toDTO)
+                .toList();
     }
 
-    //POST /rooms
     @PostMapping
-    public ResponseEntity<Room> createRoom(@RequestBody Room room) {
+    public ResponseEntity<RoomDTO> createRoom(@RequestBody RoomCreateDTO dto) {
+
+        Room room = RoomMapper.toEntity(dto);
         Room created = roomService.createRoom(room);
-        return ResponseEntity.ok(created);
+
+        return ResponseEntity.ok(RoomMapper.toDTO(created));
     }
 
     //PUT /rooms/{id}

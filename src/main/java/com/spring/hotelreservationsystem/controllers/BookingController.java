@@ -1,5 +1,7 @@
 package com.spring.hotelreservationsystem.controllers;
 
+import com.spring.hotelreservationsystem.dto.BookingDTO;
+import com.spring.hotelreservationsystem.mapper.BookingMapper;
 import com.spring.hotelreservationsystem.models.Booking;
 import com.spring.hotelreservationsystem.services.BookingService;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +20,11 @@ public class BookingController {
 
     // GET /bookings
     @GetMapping
-    public List<Booking> getAllBookings() {
-        return bookingService.getAllBookings();
+    public List<BookingDTO> getAllBookings() {
+        return bookingService.getAllBookings()
+                .stream()
+                .map(BookingMapper::toDTO)
+                .toList();
     }
 
     // POST /bookings
