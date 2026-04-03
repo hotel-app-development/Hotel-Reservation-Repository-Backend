@@ -1,10 +1,16 @@
 package com.spring.hotelreservationsystem.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class LoginResponseDTO {
     private String token;
+    private String role;
+    public LoginResponseDTO(String token){
+        this.token = token;
+    }
+    public LoginResponseDTO(String token, String role) {
+        this.token = token;
+        this.role = role;
+    }
 }
