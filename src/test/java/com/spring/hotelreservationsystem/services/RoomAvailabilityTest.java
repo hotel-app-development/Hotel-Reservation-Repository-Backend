@@ -5,6 +5,10 @@ import com.spring.hotelreservationsystem.repositories.BookingRepository;
 import com.spring.hotelreservationsystem.repositories.RoomRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -12,93 +16,66 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class RoomAvailabilityTest {
 
+    @Mock
     private RoomRepository roomRepository;
+
+    @Mock
     private BookingRepository bookingRepository;
+
+    @InjectMocks
     private RoomAvailabilityService roomAvailabilityService;
+
+    private Room room1;
+    private Room room2;
 
     @BeforeEach
     void setUp() {
-        roomRepository = mock(RoomRepository.class);
-        bookingRepository = mock(BookingRepository.class);
+        room1 = new Room("Single", 1, 50.0, "AVAILABLE");
+        room1.setId(1L);
 
-        roomAvailabilityService =
-                new RoomAvailabilityService(roomRepository, bookingRepository);
+        room2 = new Room("Double", 2, 80.0, "AVAILABLE");
+        room2.setId(2L);
     }
 
-    // Scenario 1 — No bookings
     @Test
     void shouldReturnAllRoomsWhenNoBookingsExist() {
+        when(roomRepository.findAll()).thenReturn(List.of(room1, room2));
+        when(bookingRepository.findBookedRooms(any(), any())).thenReturn(List.of());
 
-        Room room1 = new Room();
-        room1.setId(1L);
+        List<Room> available = roomAvailabilityService.getAvailableRooms(
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5)
+        );
 
-        Room room2 = new Room();
-        room2.setId(2L);
-
-        when(roomRepository.findAll())
-                .thenReturn(List.of(room1, room2));
-
-        when(bookingRepository.findBookedRooms(any(), any()))
-                .thenReturn(List.of());
-
-        List<Room> available =
-                roomAvailabilityService.getAvailableRooms(
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(5)
-                );
-
-        assertThat(available).contains(room1, room2);
+        assertThat(available).containsExactlyInAnyOrder(room1, room2);
     }
 
-    // Scenario 2 — Some bookings
     @Test
     void shouldReturnOnlyAvailableRooms() {
+        when(roomRepository.findAll()).thenReturn(List.of(room1, room2));
+        when(bookingRepository.findBookedRooms(any(), any())).thenReturn(List.of(room1));
 
-        Room room1 = new Room();
-        room1.setId(1L);
+        List<Room> available = roomAvailabilityService.getAvailableRooms(
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5)
+        );
 
-        Room room2 = new Room();
-        room2.setId(2L);
-
-        when(roomRepository.findAll())
-                .thenReturn(List.of(room1, room2));
-
-        when(bookingRepository.findBookedRooms(any(), any()))
-                .thenReturn(List.of(room1));
-
-        List<Room> available =
-                roomAvailabilityService.getAvailableRooms(
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(5)
-                );
-
-        assertThat(available).contains(room2);
+        assertThat(available).containsExactly(room2);
         assertThat(available).doesNotContain(room1);
     }
 
-    // Scenario 3 — Overlapping bookings
     @Test
     void shouldReturnEmptyListWhenAllRoomsBooked() {
+        when(roomRepository.findAll()).thenReturn(List.of(room1, room2));
+        when(bookingRepository.findBookedRooms(any(), any())).thenReturn(List.of(room1, room2));
 
-        Room room1 = new Room();
-        room1.setId(1L);
-
-        Room room2 = new Room();
-        room2.setId(2L);
-
-        when(roomRepository.findAll())
-                .thenReturn(List.of(room1, room2));
-
-        when(bookingRepository.findBookedRooms(any(), any()))
-                .thenReturn(List.of(room1, room2));
-
-        List<Room> available =
-                roomAvailabilityService.getAvailableRooms(
-                        LocalDate.now(),
-                        LocalDate.now().plusDays(5)
-                );
+        List<Room> available = roomAvailabilityService.getAvailableRooms(
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5)
+        );
 
         assertThat(available).isEmpty();
     }
