@@ -4,7 +4,7 @@ import com.spring.hotelreservationsystem.models.User;
 import com.spring.hotelreservationsystem.repositories.UserRepository;
 import com.spring.hotelreservationsystem.security.JwtUtil;
 import com.spring.hotelreservationsystem.security.UserDetailService;
-import com.spring.hotelreservationsystem.dto.LoginResponse;
+import com.spring.hotelreservationsystem.dto.LoginResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class AuthService {
 //        return "Login successful";
 //    }
 
-    public LoginResponse login(String email, String password) {
+    public LoginResponseDTO login(String email, String password) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -41,6 +41,6 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(userDetails);
 
-        return new LoginResponse(token);
+        return new LoginResponseDTO(token);
     }
 }
