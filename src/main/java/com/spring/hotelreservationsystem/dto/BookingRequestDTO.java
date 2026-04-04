@@ -1,15 +1,17 @@
 package com.spring.hotelreservationsystem.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Data
-public class BookingDTO {
-    private Long id;
+@NoArgsConstructor
+@AllArgsConstructor
+public class BookingRequestDTO {
     private Long userId;
     private Long roomId;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
-    private String status;
 }

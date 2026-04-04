@@ -4,7 +4,7 @@ import com.spring.hotelreservationsystem.models.Room;
 import com.spring.hotelreservationsystem.repositories.BookingRepository;
 import com.spring.hotelreservationsystem.repositories.RoomRepository;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,14 +21,12 @@ public class RoomAvailabilityService {
     }
 
     public List<Room> getAvailableRooms(LocalDate start, LocalDate end) {
+        List<Room> allRooms = roomRepository.findAll();
+        List<Room> bookedRooms = bookingRepository.findBookedRooms(start, end);
 
-        List<Room> rooms = new ArrayList<>(roomRepository.findAll());
-
-        List<Room> bookedRooms =
-                bookingRepository.findBookedRooms(start, end);
-
-        rooms.removeAll(bookedRooms);
-
-        return rooms;
+        return allRooms.stream()
+                .filter(room -> "AVAILABLE".equalsIgnoreCase(room.getStatus()))
+                .filter(room -> !bookedRooms.contains(room))
+                .toList();
     }
 }
