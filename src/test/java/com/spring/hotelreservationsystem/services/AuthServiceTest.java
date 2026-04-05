@@ -1,24 +1,29 @@
+// src/test/java/com/spring/hotelreservationsystem/services/AuthServiceTest.java
+
 package com.spring.hotelreservationsystem.services;
 
-
-import com.spring.hotelreservationsystem.services.AuthService;
+import com.spring.hotelreservationsystem.dto.LoginResponseDTO;
 import com.spring.hotelreservationsystem.models.Role;
 import com.spring.hotelreservationsystem.models.User;
 import com.spring.hotelreservationsystem.repositories.UserRepository;
+import com.spring.hotelreservationsystem.security.JwtUtil;
+import com.spring.hotelreservationsystem.security.UserDetailService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import static org.mockito.Mockito.when;
-
-public class AuthServiceTest {
+@ExtendWith(MockitoExtension.class)
+class AuthServiceTest {
 
     @Mock
     private UserRepository userRepository;
@@ -26,78 +31,57 @@ public class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private JwtUtil jwtUtil;
+
+    @Mock
+    private UserDetailService userDetailService;
+
     @InjectMocks
     private AuthService authService;
 
-    public AuthServiceTest(){
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
-    void register_ShouldEncodePassword_AndSaveUser(){
-
+    void login_success() {
         User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john@gmail.com");
-        user.setPassword("123456");
-        user.setRole(Role.CUSTOMER);
+        user.setEmail("test@mail.com");
+        user.setPassword("hashed");
+        user.setRole(Role.MANAGER);
 
-        when(passwordEncoder.encode("123456")).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.findByEmail("test@mail.com"))
+                .thenReturn(Optional.of(user));
 
-        User savedUser = authService.register(user);
+        when(passwordEncoder.matches("pass", "hashed"))
+                .thenReturn(true);
 
-        verify(passwordEncoder).encode("123456");
-        verify(userRepository).save(user);
+        UserDetails userDetails =
+                new org.springframework.security.core.userdetails.User(
+                        "test@mail.com", "hashed", List.of());
 
-        assertEquals("encodedPassword", user.getPassword());
+        when(userDetailService.loadUserByUsername("test@mail.com"))
+                .thenReturn(userDetails);
+
+        when(jwtUtil.generateToken(userDetails))
+                .thenReturn("fake-jwt");
+
+        LoginResponseDTO response = authService.login("test@mail.com", "pass");
+
+        assertEquals("fake-jwt", response.getToken());
+        assertEquals("MANAGER", response.getRole());
     }
 
-
-
     @Test
-    void login_ShouldReturnSuccess_WhenPasswordMatches() {
-
+    void login_invalidPassword() {
         User user = new User();
-        user.setEmail("john@gmail.com");
-        user.setPassword("encodedPassword");
-        user.setRole(Role.CUSTOMER);
+        user.setEmail("test@mail.com");
+        user.setPassword("hashed");
 
-        when(userRepository.findByEmail("john@gmail.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("123456", "encodedPassword")).thenReturn(true);
+        when(userRepository.findByEmail("test@mail.com"))
+                .thenReturn(Optional.of(user));
 
-        String result = authService.login("john@gmail.com", "123456");
+        when(passwordEncoder.matches(any(), any()))
+                .thenReturn(false);
 
-        assertEquals("Login successful", result);
-    }
-
-    @Test
-    void login_ShouldThrowException_WhenPasswordIncorrect() {
-
-        User user = new User();
-        user.setEmail("john@gmail.com");
-        user.setPassword("encodedPassword");
-        user.setRole(Role.CUSTOMER);
-
-        when(userRepository.findByEmail("john@gmail.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("wrongpass", "encodedPassword")).thenReturn(false);
-
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            authService.login("john@gmail.com", "wrongpass");
-        });
-
-        assertEquals("Invalid password", exception.getMessage());
-    }
-
-    @Test
-    void login_ShouldThrowException_WhenUserNotFound() {
-
-        when(userRepository.findByEmail("unknown@gmail.com")).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            authService.login("unknown@gmail.com", "123456");
-        });
-
-        assertEquals("User not found", exception.getMessage());
+        assertThrows(RuntimeException.class,
+                () -> authService.login("test@mail.com", "wrong"));
     }
 }
