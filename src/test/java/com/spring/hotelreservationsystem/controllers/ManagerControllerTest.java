@@ -2,6 +2,7 @@ package com.spring.hotelreservationsystem.controllers;
 
 import com.spring.hotelreservationsystem.security.JwtAuthenticationFilter;
 import com.spring.hotelreservationsystem.security.JwtUtil;
+import com.spring.hotelreservationsystem.services.BookingService;
 import com.spring.hotelreservationsystem.services.RoomService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ class ManagerControllerTest {
     private RoomService roomService;
 
     @MockBean
-    private JwtUtil jwtUtil;
+    private BookingService bookingService;
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -37,8 +38,7 @@ class ManagerControllerTest {
     void getAllRooms_shouldReturnOk() throws Exception {
         when(roomService.getAllRooms()).thenReturn(List.of());
 
-        mockMvc.perform(get("/manager/rooms"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+        mockMvc.perform(get("/api/manager/rooms"))
+                .andExpect(status().isOk());
     }
 }

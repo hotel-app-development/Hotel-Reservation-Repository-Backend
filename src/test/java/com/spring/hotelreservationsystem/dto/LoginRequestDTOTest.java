@@ -1,5 +1,3 @@
-// src/test/java/com/spring/hotelreservationsystem/dto/LoginRequestDTOTest.java
-
 package com.spring.hotelreservationsystem.dto;
 
 import org.junit.jupiter.api.Test;

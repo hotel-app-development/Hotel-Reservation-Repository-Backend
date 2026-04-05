@@ -1,5 +1,3 @@
-// src/test/java/com/spring/hotelreservationsystem/mapper/RoomMapperTest.java
-
 package com.spring.hotelreservationsystem.mapper;
 
 import com.spring.hotelreservationsystem.dto.RoomDTO;
